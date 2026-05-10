@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Nourish</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0A0A0A;color:#F0EBE1;font-family:-apple-system,sans-serif;min-height:100vh;}
+#app{max-width:480px;margin:0 auto;}
+button{font-family:-apple-system,sans-serif;cursor:pointer;}
+.header{padding:20px 20px 0;border-bottom:1px solid #1A1A1A;}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
+.app-title{font-size:26px;font-weight:700;}
+.app-sub{font-size:10px;color:#4A4440;letter-spacing:.1em;text-transform:uppercase;margin-top:3px;}
+.cal-target{font-size:14px;font-weight:600;color:#D4A84B;text-align:right;}
+.cal-meta{font-size:11px;color:#5A5450;margin-top:2px;}
+.nav{display:flex;gap:2px;}
+.nav-btn{flex:1;padding:9px 0;border:none;font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;border-radius:8px 8px 0 0;transition:all .2s;background:transparent;color:#4A4440;}
+.nav-btn.active{background:#1A1A1A;color:#F0EBE1;}
+.day-row{display:flex;gap:8px;padding:16px 20px;overflow-x:auto;}
+.day-btn{flex-shrink:0;padding:7px 14px;border-radius:20px;font-size:12px;border:1px solid #222;background:transparent;color:#7A7470;position:relative;}
+.day-btn.active{background:#D4A84B;color:#0A0A0A;border-color:#D4A84B;font-weight:600;}
+.day-dot{position:absolute;top:-2px;right:-2px;width:7px;height:7px;background:#5B8A6E;border-radius:50%;}
+.progress-card{margin:0 20px 14px;background:#141414;border-radius:16px;border:1px solid #1E1E1E;padding:16px;}
+.progress-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.day-label{font-size:10px;color:#5A5450;text-transform:uppercase;letter-spacing:.08em;}
+.eaten-num{font-size:22px;font-weight:600;line-height:1.2;margin-top:2px;}
+.eaten-unit{font-size:13px;color:#5A5450;font-weight:400;}
+.remaining-num{font-size:20px;font-weight:600;color:#D4A84B;}
+.remaining-label{font-size:10px;color:#5A5450;}
+.target-hit{font-size:13px;font-weight:600;color:#5B8A6E;}
+.bar-track{background:#1E1E1E;border-radius:4px;height:6px;overflow:hidden;margin-bottom:12px;}
+.bar-fill{height:100%;border-radius:4px;transition:width .5s;}
+.macros{display:flex;gap:10px;}
+.macro{flex:1;}
+.macro-label{font-size:10px;color:#5A5450;margin-bottom:2px;}
+.macro-val{font-size:12px;font-weight:500;}
+.macro-total{color:#333;font-weight:400;}
+.macro-bar-track{background:#1E1E1E;border-radius:2px;height:3px;margin-top:3px;}
+.macro-bar-fill{height:100%;border-radius:2px;transition:width .5s;}
+.meals{padding:0 20px 28px;display:flex;flex-direction:column;gap:10px;}
+.meal-card{background:#141414;border-radius:16px;overflow:hidden;border:1px solid #1E1E1E;transition:border-color .3s;}
+.meal-card.eaten{border-color:rgba(212,168,75,.25);}
+.meal-header{padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;}
+.meal-type-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1px;}
+.meal-info{flex:1;min-width:0;}
+.meal-name{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.meal-sub{font-size:11px;color:#5A5450;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.meal-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
+.meal-cal{font-size:15px;font-weight:600;}
+.meal-kcal{font-size:10px;color:#3A3430;}
+.meal-time{font-size:10px;background:#1E1E1E;padding:2px 7px;border-radius:10px;color:#5A5450;}
+.chevron{color:#3A3430;font-size:12px;margin-left:4px;flex-shrink:0;transition:transform .2s;display:inline-block;}
+.chevron.open{transform:rotate(180deg);}
+.meal-body{padding:0 16px 16px;border-top:1px solid #1E1E1E;}
+.macro-chips{display:flex;gap:8px;padding:12px 0;}
+.macro-chip{flex:1;background:#1A1A1A;border-radius:10px;padding:8px 0;text-align:center;}
+.chip-label{font-size:10px;color:#5A5450;}
+.chip-val{font-size:15px;font-weight:600;}
+.section-label{font-size:10px;color:#4A4440;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;}
+.ing-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.ing-tag{font-size:11px;background:#1C1C1C;border:1px solid #242424;padding:4px 10px;border-radius:20px;color:#9A9490;}
+.method-text{font-size:13px;color:#B0A8A0;line-height:1.7;margin-bottom:14px;}
+.action-row{display:flex;gap:8px;}
+.eat-btn{flex:1;border-radius:10px;font-size:12px;font-weight:500;padding:10px 14px;border:1px solid #2A2A2A;background:transparent;color:#6A6460;}
+.eat-btn.active{background:rgba(212,168,75,.13);border-color:#D4A84B;color:#D4A84B;}
+.shopping-view{padding:20px 20px 28px;}
+.shop-title{font-size:22px;font-weight:700;margin-bottom:4px;}
+.shop-sub{font-size:12px;color:#5A5450;margin-bottom:18px;}
+.shop-section-title{font-size:11px;color:#D4A84B;text-transform:uppercase;letter-spacing:.1em;margin:16px 0 8px;font-weight:600;}
+.shop-list{display:flex;flex-direction:column;gap:6px;}
+.shop-item{display:flex;align-items:center;gap:12px;padding:11px 14px;background:#141414;border-radius:12px;border:1px solid #1E1E1E;cursor:pointer;transition:opacity .2s;}
+.shop-item.ticked{opacity:.35;}
+.check-box{width:20px;height:20px;border-radius:6px;flex-shrink:0;border:2px solid #2A2A2A;background:transparent;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0A0A0A;}
+.check-box.done{background:#5B8A6E;border-color:#5B8A6E;}
+.shop-text{font-size:13px;color:#B0A8A0;}
+.shop-text.ticked{color:#3A3430;text-decoration:line-through;}
+.reset-btn{margin-top:16px;width:100%;padding:12px;border:1px solid #2A2A2A;border-radius:12px;background:transparent;color:#5A5450;font-size:12px;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+var DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+var FULL = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+var TYPES = ["breakfast","lunch","snack","dinner"];
+var META = {
+  breakfast:{accent:"#D4A84B",label:"Breakfast"},
+  lunch:{accent:"#5B8A6E",label:"Lunch"},
+  snack:{accent:"#7A8FA6",label:"Snack"},
+  dinner:{accent:"#C07A50",label:"Dinner"}
+};
+
+var SHOPPING = [
+{section:“Proteins”, items:[
+“Chicken breast (approx 1.2kg)”,
+“Salmon fillets x2 (400g total)”,
+“Tinned tuna in water x4 cans”,
+“Tinned salmon in water x2 cans”,
+“Smoked salmon (50g pack)”,
+“Lean turkey mince (200g)”,
+“Eggs x1 dozen”,
+“Low-fat cottage cheese (150g)”,
+“0% Greek yogurt x2 large tubs”
+]},
+{section:“Carbs”, items:[
+“White rice (bag)”,
+“Pasta (bag)”,
+“Rolled oats (bag)”,
+“Wholemeal bread (1 loaf)”,
+“Tortilla wraps”,
+“New potatoes (400g)”,
+“Sweet potatoes x3”
+]},
+{section:“Veg and Fruit”, items:[
+“Broccoli”,
+“Baby spinach (bag)”,
+“Cucumber x3”,
+“Green beans (150g)”,
+“Tomatoes x2”,
+“Bananas x3”,
+“Mixed berries (fresh or frozen)”,
+“Apples x2”,
+“Lemon x1”
+]},
+{section:“Dairy and Fridge”, items:[
+“Semi-skimmed milk”,
+“Cheddar (small block)”,
+“Butter”
+]},
+{section:“Cupboard”, items:[
+“Olive oil”,
+“Natural peanut butter”,
+“Light mayo”,
+“Honey”,
+“Granola (small bag)”,
+“Rice cakes”,
+“Oatcakes”,
+“Almonds (small bag)”,
+“Sweetcorn x2 tins”,
+“Chopped tomatoes x1 tin”,
+“Frozen peas (bag)”,
+“Frozen mixed veg (bag)”,
+“Paprika”,
+“Garlic powder”,
+“Mixed herbs”,
+“Dill”
+]}
+];
+
+var PLAN = [
+{
+breakfast:{name:“Scrambled Eggs on Toast”,sub:“2 eggs, wholemeal toast and butter”,cal:400,p:22,c:38,f:16,time:8,tag:“Eggs”,
+ing:[“2 large eggs”,“2 slices wholemeal bread”,“1 tsp butter”,“Salt and pepper”],
+how:“Whisk eggs with salt and pepper. Melt butter on low heat, add eggs and stir slowly until just set. Toast bread and serve eggs on top.”},
+lunch:{name:“Chicken and Rice Bowl”,sub:“Grilled chicken, white rice and broccoli”,cal:540,p:46,c:56,f:10,time:15,tag:“Chicken”,
+ing:[“180g chicken breast”,“1 cup cooked white rice”,“1 cup broccoli”,“1 tbsp olive oil”,“Salt, pepper, garlic powder”],
+how:“Season chicken and fry in olive oil 6-7 mins each side. Microwave broccoli 3 mins. Slice chicken and serve over rice.”},
+snack:{name:“Greek Yogurt with Honey”,sub:“High-protein yogurt with honey”,cal:220,p:18,c:24,f:4,time:1,tag:“Dairy”,
+ing:[“180g 0% Greek yogurt”,“1 tbsp honey”],
+how:“Spoon yogurt into a bowl and drizzle honey on top.”},
+dinner:{name:“Salmon with Rice and Spinach”,sub:“Pan-fried salmon, rice and wilted spinach”,cal:600,p:44,c:52,f:18,time:18,tag:“Salmon”,
+ing:[“200g salmon fillet”,“1 cup cooked white rice”,“2 handfuls spinach”,“1 tbsp olive oil”,“1 lemon”,“Salt and pepper”],
+how:“Season salmon with salt, pepper and lemon. Fry skin-down 4 mins, flip 3 mins. Wilt spinach 1 min. Serve with rice.”}
+},
+{
+breakfast:{name:“Porridge with Banana and Honey”,sub:“Rolled oats, banana and honey”,cal:400,p:12,c:68,f:7,time:8,tag:“Oats”,
+ing:[“80g rolled oats”,“350ml semi-skimmed milk”,“1 banana”,“1 tbsp honey”],
+how:“Cook oats in milk 4-5 mins stirring until creamy. Top with sliced banana and honey.”},
+lunch:{name:“Tuna Pasta Salad”,sub:“Tinned tuna, pasta, sweetcorn and mayo”,cal:520,p:38,c:60,f:10,time:12,tag:“Tuna”,
+ing:[“1 can tuna in water (145g)”,“100g pasta dry”,“half cup sweetcorn drained”,“2 tbsp light mayo”,“half cucumber diced”,“Salt and pepper”],
+how:“Boil pasta, drain and rinse cold. Drain tuna. Mix everything with mayo. Season.”},
+snack:{name:“2 Boiled Eggs and Apple”,sub:“Protein with natural energy”,cal:210,p:14,c:18,f:10,time:8,tag:“Eggs”,
+ing:[“2 large eggs”,“1 medium apple”],
+how:“Boil eggs 7 mins. Cool, peel and season with salt. Eat alongside the apple.”},
+dinner:{name:“Chicken with Sweet Potato and Green Beans”,sub:“Chicken, sweet potato and green beans”,cal:620,p:46,c:62,f:12,time:20,tag:“Chicken”,
+ing:[“200g chicken breast”,“1 medium sweet potato diced”,“150g green beans”,“1 tbsp olive oil”,“1 tsp paprika”,“Salt and pepper”],
+how:“Microwave sweet potato 8 mins. Season chicken and fry 6-7 mins each side. Boil green beans 4 mins. Serve together.”}
+},
+{
+breakfast:{name:“Overnight Oats with Peanut Butter”,sub:“Oats soaked overnight, banana and PB”,cal:420,p:16,c:56,f:14,time:5,tag:“Oats”,
+ing:[“80g rolled oats”,“250ml semi-skimmed milk”,“2 tbsp peanut butter”,“1 banana”,“1 tsp honey”],
+how:“Night before: mix oats, milk, peanut butter and honey. Refrigerate. Top with banana in the morning.”},
+lunch:{name:“Tinned Salmon and Rice Bowl”,sub:“Tinned salmon, rice, cucumber and lemon”,cal:530,p:40,c:54,f:14,time:8,tag:“Salmon”,
+ing:[“1 can salmon in water (213g)”,“1 cup cooked white rice”,“half cucumber sliced”,“1 tbsp olive oil”,“juice of half lemon”,“Salt and pepper”],
+how:“Drain and flake salmon. Serve over rice with cucumber. Drizzle olive oil and lemon. Season.”},
+snack:{name:“Rice Cakes and Peanut Butter”,sub:“3 rice cakes with peanut butter”,cal:250,p:7,c:34,f:10,time:2,tag:“Snack”,
+ing:[“3 plain rice cakes”,“2 tbsp natural peanut butter”],
+how:“Spread peanut butter on rice cakes.”},
+dinner:{name:“Tuna Pasta with Peas and Sweetcorn”,sub:“Simple tuna pasta”,cal:600,p:44,c:68,f:10,time:15,tag:“Tuna”,
+ing:[“1 can tuna in water (145g)”,“120g pasta dry”,“half cup frozen peas”,“half cup sweetcorn”,“1 tbsp light mayo”,“Salt and pepper”],
+how:“Boil pasta, add peas last 2 mins, drain. Mix in tuna, sweetcorn and mayo. Season.”}
+},
+{
+breakfast:{name:“3-Egg Omelette with Cheese and Spinach”,sub:“Fluffy omelette with cheddar and spinach”,cal:410,p:28,c:4,f:28,time:10,tag:“Eggs”,
+ing:[“3 large eggs”,“30g cheddar grated”,“1 handful baby spinach”,“1 tsp butter”,“Salt and pepper”],
+how:“Whisk eggs. Melt butter, pour in eggs, let set slightly. Add spinach and cheese to one half, fold over. 1 more min.”},
+lunch:{name:“Chicken Wrap”,sub:“Chicken, lettuce, tomato and mayo in a wrap”,cal:540,p:42,c:52,f:14,time:10,tag:“Chicken”,
+ing:[“180g cooked chicken breast sliced”,“1 large tortilla wrap”,“2 tbsp light mayo”,“Handful lettuce”,“1 tomato sliced”,“half cucumber sliced”],
+how:“Spread mayo on wrap. Layer lettuce, tomato, cucumber and chicken. Roll tightly and cut in half.”},
+snack:{name:“Cottage Cheese and Oatcakes”,sub:“Low-fat cottage cheese with oatcakes”,cal:220,p:18,c:22,f:5,time:2,tag:“Dairy”,
+ing:[“150g low-fat cottage cheese”,“4 oatcakes”,“Salt and pepper”],
+how:“Spoon cottage cheese onto oatcakes and season.”},
+dinner:{name:“Salmon with Potatoes and Broccoli”,sub:“Pan-fried salmon, potatoes and broccoli”,cal:620,p:42,c:54,f:18,time:20,tag:“Salmon”,
+ing:[“200g salmon fillet”,“200g new potatoes halved”,“1 cup broccoli”,“1 tbsp olive oil”,“1 lemon”,“Salt, pepper and dill”],
+how:“Boil potatoes 12-15 mins. Steam broccoli 4 mins. Season salmon and fry 4 mins each side. Serve with lemon.”}
+},
+{
+breakfast:{name:“Greek Yogurt, Granola and Berries”,sub:“Yogurt with granola and mixed berries”,cal:400,p:18,c:52,f:10,time:3,tag:“Dairy”,
+ing:[“180g 0% Greek yogurt”,“40g granola”,“1 handful mixed berries”,“1 tsp honey”],
+how:“Layer yogurt in a bowl. Top with granola, berries and a drizzle of honey.”},
+lunch:{name:“Tuna Rice Bowl with Sweetcorn”,sub:“Tinned tuna over rice with sweetcorn”,cal:520,p:40,c:58,f:8,time:8,tag:“Tuna”,
+ing:[“1 can tuna in water (145g)”,“1 cup cooked white rice”,“half cup sweetcorn drained”,“half cucumber diced”,“1 tbsp olive oil”,“Salt and pepper”],
+how:“Drain tuna. Serve over rice with sweetcorn and cucumber. Drizzle olive oil. Season.”},
+snack:{name:“Banana and Almonds”,sub:“Natural sugar and healthy fats”,cal:220,p:6,c:30,f:10,time:1,tag:“Snack”,
+ing:[“1 medium banana”,“20g unsalted almonds”],
+how:“Eat together. Great on the go.”},
+dinner:{name:“Chicken Thighs with Rice and Mixed Veg”,sub:“Chicken thighs, rice and mixed veg”,cal:620,p:48,c:56,f:16,time:20,tag:“Chicken”,
+ing:[“200g boneless chicken thighs”,“1 cup cooked white rice”,“1 cup frozen mixed veg”,“1 tbsp olive oil”,“1 tsp paprika”,“Salt and garlic powder”],
+how:“Season chicken and fry in olive oil 6 mins each side. Microwave mixed veg 4 mins. Serve over rice.”}
+},
+{
+breakfast:{name:“Scrambled Eggs and Smoked Salmon”,sub:“Eggs with smoked salmon on toast”,cal:420,p:30,c:34,f:16,time:10,tag:“Eggs”,
+ing:[“2 large eggs”,“50g smoked salmon”,“2 slices wholemeal bread”,“1 tsp butter”,“Salt, pepper and lemon”],
+how:“Scramble eggs slowly in butter on low heat. Toast bread. Lay salmon on toast, top with eggs and a squeeze of lemon.”},
+lunch:{name:“Chicken and Sweet Potato Bowl”,sub:“Chicken, sweet potato and spinach”,cal:540,p:44,c:56,f:12,time:20,tag:“Chicken”,
+ing:[“180g chicken breast”,“1 medium sweet potato diced”,“2 handfuls baby spinach”,“1 tbsp olive oil”,“1 tsp paprika”,“Salt and pepper”],
+how:“Microwave sweet potato 7-8 mins. Fry chicken 6-7 mins each side. Wilt spinach in pan 1 min. Combine in a bowl.”},
+snack:{name:“Apple and Peanut Butter”,sub:“Sliced apple with peanut butter”,cal:200,p:5,c:28,f:9,time:2,tag:“Snack”,
+ing:[“1 large apple sliced”,“2 tbsp natural peanut butter”],
+how:“Slice apple into wedges and dip into peanut butter.”},
+dinner:{name:“Turkey Mince Pasta”,sub:“Turkey mince with tomato sauce and pasta”,cal:600,p:50,c:62,f:12,time:20,tag:“Turkey”,
+ing:[“200g lean turkey mince”,“120g pasta dry”,“1 tin chopped tomatoes (400g)”,“1 garlic clove minced”,“half onion diced”,“1 tsp olive oil”,“1 tsp mixed herbs”,“Salt and pepper”],
+how:“Fry onion and garlic 2-3 mins. Add turkey, cook 5 mins. Add tomatoes and herbs, simmer 8 mins. Boil pasta. Serve mince over pasta.”}
+},
+{
+breakfast:{name:“Porridge with Berries and Honey”,sub:“Creamy oats topped with mixed berries”,cal:380,p:12,c:64,f:7,time:8,tag:“Oats”,
+ing:[“80g rolled oats”,“350ml semi-skimmed milk”,“1 handful mixed berries”,“1 tbsp honey”],
+how:“Cook oats in milk 4-5 mins stirring. Top with berries and honey.”},
+lunch:{name:“Tinned Salmon Sandwich”,sub:“Tinned salmon on wholemeal with salad”,cal:540,p:38,c:52,f:16,time:8,tag:“Salmon”,
+ing:[“1 can salmon in water (213g)”,“4 slices wholemeal bread”,“2 tbsp light mayo”,“Handful lettuce”,“1 tomato sliced”,“half cucumber sliced”],
+how:“Drain and flake salmon. Mix with mayo. Spread on bread with lettuce, tomato and cucumber.”},
+snack:{name:“2 Boiled Eggs and Rice Cakes”,sub:“Clean protein snack”,cal:220,p:16,c:18,f:10,time:8,tag:“Eggs”,
+ing:[“2 large eggs”,“2 plain rice cakes”,“Salt and pepper”],
+how:“Boil eggs 7 mins, cool and peel. Season. Eat alongside rice cakes.”},
+dinner:{name:“Chicken Breast with Mash and Peas”,sub:“Chicken, creamy mash and garden peas”,cal:620,p:50,c:58,f:14,time:20,tag:“Chicken”,
+ing:[“200g chicken breast”,“2 medium potatoes peeled and diced”,“1 cup frozen peas”,“1 tbsp butter”,“2 tbsp milk”,“Salt, pepper and garlic powder”],
+how:“Boil potatoes 12-15 mins, drain and mash with butter, milk and seasoning. Fry chicken 6-7 mins each side. Boil peas 3 mins. Serve together.”}
+}
+];
+
+var state = { day:0, open:null, eaten:{}, view:“plan”, checked:{} };
+
+function eatenCal() {
+var t = 0;
+TYPES.forEach(function(m){ if(state.eaten[state.day+”-”+m]) t += PLAN[state.day][m].cal; });
+return t;
+}
+function totalM(k){ var t=0; TYPES.forEach(function(m){ t+=PLAN[state.day][m][k]; }); return t; }
+function eatenM(k){ var t=0; TYPES.forEach(function(m){ if(state.eaten[state.day+”-”+m]) t+=PLAN[state.day][m][k]; }); return t; }
+function pct(a,b){ return b>0?Math.round(Math.min(a/b,1)*100):0; }
+
+function render() {
+var ec=eatenCal(), rem=Math.max(1800-ec,0), prog=Math.min(ec/1800,1);
+var ep=eatenM(“p”),ecc=eatenM(“c”),ef=eatenM(“f”);
+var tp=totalM(“p”),tc=totalM(“c”),tf=totalM(“f”);
+var h = “”;
+
+// HEADER
+h+=’<div class="header">’;
+h+=’<div class="header-top"><div><div class="app-title">Nourish</div><div class="app-sub">Simple Clean Diet</div></div>’;
+h+=’<div><div class="cal-target">1,800 cal / day</div><div class="cal-meta">92 kg - 6ft - Deficit</div></div></div>’;
+h+=’<div class="nav">’;
+h+=’<button class=“nav-btn’+(state.view==“plan”?” active”:””)+’” onclick=“go('plan')”>Meal Plan</button>’;
+h+=’<button class=“nav-btn’+(state.view==“shopping”?” active”:””)+’” onclick=“go('shopping')”>Shopping</button>’;
+h+=’</div></div>’;
+
+if(state.view==“plan”){
+// DAY TABS
+h+=’<div class="day-row">’;
+DAYS.forEach(function(d,i){
+var a=i===state.day, dot=TYPES.some(function(t){return state.eaten[i+”-”+t];});
+h+=’<button class=“day-btn’+(a?” active”:””)+’” onclick=“setDay(’+i+’)”>’+d+(dot&&!a?’<span class="day-dot"></span>’:””)+’ </button>’;
+});
+h+=’</div>’;
+
+```
+// PROGRESS
+h+='<div class="progress-card">';
+h+='<div class="progress-top"><div><div class="day-label">'+FULL[state.day]+'</div>';
+h+='<div class="eaten-num">'+ec+' <span class="eaten-unit">kcal eaten</span></div></div>';
+h+='<div style="text-align:right">';
+if(ec>=1800){ h+='<div class="target-hit">Target hit!</div>'; }
+else{ h+='<div class="remaining-num">'+rem+'</div><div class="remaining-label">remaining</div>'; }
+h+='</div></div>';
+var bc=prog>=1?"#5B8A6E":"linear-gradient(90deg,#C49030,#E8C56B)";
+h+='<div class="bar-track"><div class="bar-fill" style="width:'+Math.round(prog*100)+'%;background:'+bc+'"></div></div>';
+h+='<div class="macros">';
+[["Protein",ep,tp,"#D4A84B"],["Carbs",ecc,tc,"#7A8FA6"],["Fat",ef,tf,"#C07A50"]].forEach(function(m){
+  h+='<div class="macro"><div class="macro-label">'+m[0]+'</div>';
+  h+='<div class="macro-val" style="color:'+m[3]+'">'+m[1]+'<span class="macro-total">/'+m[2]+'g</span></div>';
+  h+='<div class="macro-bar-track"><div class="macro-bar-fill" style="width:'+pct(m[1],m[2])+'%;background:'+m[3]+'"></div></div></div>';
+});
+h+='</div></div>';
+
+// MEALS
+h+='<div class="meals">';
+TYPES.forEach(function(mt){
+  var meal=PLAN[state.day][mt], meta=META[mt];
+  var isOpen=state.open===mt, isEaten=!!state.eaten[state.day+"-"+mt];
+  h+='<div class="meal-card'+(isEaten?" eaten":"")+'">';
+  h+='<div class="meal-header" onclick="tog(\''+mt+'\')">';
+  h+='<div class="meal-info">';
+  h+='<div class="meal-type-label" style="color:'+meta.accent+'">'+meta.label+'</div>';
+  h+='<div class="meal-name">'+meal.name+'</div>';
+  h+='<div class="meal-sub">'+meal.sub+'</div></div>';
+  h+='<div class="meal-right"><div class="meal-cal" style="color:'+meta.accent+'">'+meal.cal+'</div>';
+  h+='<div class="meal-kcal">kcal</div><div class="meal-time">'+meal.time+'m</div></div>';
+  h+='<span class="chevron'+(isOpen?" open":"")+'">v</span></div>';
+
+  if(isOpen){
+    h+='<div class="meal-body">';
+    h+='<div class="macro-chips">';
+    [["P",meal.p,"#D4A84B"],["C",meal.c,"#7A8FA6"],["F",meal.f,"#C07A50"]].forEach(function(m){
+      h+='<div class="macro-chip"><div class="chip-label">'+m[0]+'</div><div class="chip-val" style="color:'+m[2]+'">'+m[1]+'g</div></div>';
+    });
+    h+='<div class="macro-chip"><div class="chip-label">Type</div><div class="chip-val" style="color:'+meta.accent+';font-size:11px">'+meal.tag+'</div></div>';
+    h+='</div>';
+    h+='<div class="section-label">Ingredients</div><div class="ing-list">';
+    meal.ing.forEach(function(i){ h+='<span class="ing-tag">'+i+'</span>'; });
+    h+='</div>';
+    h+='<div class="section-label">Method</div>';
+    h+='<div class="method-text">'+meal.how+'</div>';
+    h+='<div class="action-row"><button class="eat-btn'+(isEaten?" active":"")+'" onclick="eat(\''+mt+'\')">'+( isEaten?"Eaten":"Mark as Eaten")+'</button></div>';
+    h+='</div>';
+  }
+  h+='</div>';
+});
+h+='</div>';
+```
+
+} else {
+// SHOPPING
+h+=’<div class="shopping-view">’;
+h+=’<div class="shop-title">Weekly Shop</div>’;
+h+=’<div class="shop-sub">One trolley, one shop. About 50-60 pounds at Tesco or Aldi.</div>’;
+var idx=0;
+SHOPPING.forEach(function(sec){
+h+=’<div class="shop-section-title">’+sec.section+’</div>’;
+h+=’<div class="shop-list">’;
+sec.items.forEach(function(item){
+var i=idx, ticked=!!state.checked[i];
+h+=’<div class=“shop-item’+(ticked?” ticked”:””)+’” onclick=“chk(’+i+’)”>’;
+h+=’<div class=“check-box’+(ticked?” done”:””)+’”>’+(ticked?“v”:””)+’</div>’;
+h+=’<div class=“shop-text’+(ticked?” ticked”:””)+’” >’+item+’</div>’;
+h+=’</div>’;
+idx++;
+});
+h+=’</div>’;
+});
+h+=’<button class="reset-btn" onclick="resetChk()">Reset All</button>’;
+h+=’</div>’;
+}
+
+document.getElementById(“app”).innerHTML = h;
+}
+
+function setDay(i){ state.day=i; state.open=null; render(); }
+function go(v){ state.view=v; render(); }
+function tog(t){ state.open=state.open===t?null:t; render(); }
+function eat(t){ var k=state.day+”-”+t; state.eaten[k]=!state.eaten[k]; render(); }
+function chk(i){ state.checked[i]=!state.checked[i]; render(); }
+function resetChk(){ state.checked={}; render(); }
+
+render();
+</script>
+
+</body>
+</html>
