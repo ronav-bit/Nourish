@@ -239,7 +239,7 @@ function render(){
   // HEADER
   h+='<div class="header">';
   h+='<div class="header-top"><div><div class="app-title">Nourish</div><div class="app-sub">Simple Clean Diet</div></div>';
-  h+='<div><div class="cal-target">1,800 cal / day</div><div class="cal-meta">92 kg - 6ft - Deficit</div></div></div>';
+  h+='<div><div class="cal-target">1,800 cal / day</div><div class="cal-meta">90 kg - 6ft 1 - Deficit</div></div></div>';
   h+='<div class="nav">';
   h+='<button class="nav-btn'+(state.view=="plan"?" active":"")+'" onclick="go(\'plan\')">Meal Plan</button>';
   h+='<button class="nav-btn'+(state.view=="shopping"?" active":"")+'" onclick="go(\'shopping\')">Shopping</button>';
@@ -376,16 +376,42 @@ function render(){
   document.getElementById("app").innerHTML = h;
 }
 
-function setWeek(w){ state.week=w; state.open=null; render(); }
-function setDay(d){ state.day=d; state.open=null; render(); }
-function go(v){ state.view=v; render(); }
-function tog(t){ state.open=state.open===t?null:t; render(); }
-function eat(t){ state.eaten[eatKey(t)]=!state.eaten[eatKey(t)]; render(); }
-function pickMenu(m){ state.choices[choiceKey()]=m; state.open=null; render(); }
-function switchMenu(){ delete state.choices[choiceKey()]; state.eaten={}; state.open=null; render(); }
-function chk(i){ state.checked[state.week][i]=!state.checked[state.week][i]; render(); }
-function resetChk(){ state.checked[state.week]={}; render(); }
+function save(){
+  try {
+    localStorage.setItem("nourish", JSON.stringify({
+      week: state.week,
+      day: state.day,
+      choices: state.choices,
+      eaten: state.eaten,
+      checked: state.checked
+    }));
+  } catch(e){}
+}
 
+function load(){
+  try {
+    var raw = localStorage.getItem("nourish");
+    if(!raw) return;
+    var saved = JSON.parse(raw);
+    if(saved.week !== undefined) state.week = saved.week;
+    if(saved.day !== undefined) state.day = saved.day;
+    if(saved.choices) state.choices = saved.choices;
+    if(saved.eaten) state.eaten = saved.eaten;
+    if(saved.checked) state.checked = saved.checked;
+  } catch(e){}
+}
+
+function setWeek(w){ state.week=w; state.open=null; save(); render(); }
+function setDay(d){ state.day=d; state.open=null; save(); render(); }
+function go(v){ state.view=v; save(); render(); }
+function tog(t){ state.open=state.open===t?null:t; render(); }
+function eat(t){ state.eaten[eatKey(t)]=!state.eaten[eatKey(t)]; save(); render(); }
+function pickMenu(m){ state.choices[choiceKey()]=m; state.open=null; save(); render(); }
+function switchMenu(){ delete state.choices[choiceKey()]; state.open=null; save(); render(); }
+function chk(i){ state.checked[state.week][i]=!state.checked[state.week][i]; save(); render(); }
+function resetChk(){ state.checked[state.week]={}; save(); render(); }
+
+load();
 render();
 </script>
 </body>
